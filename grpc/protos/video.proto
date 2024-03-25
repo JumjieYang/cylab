@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package videoProcessing;
+
+service VideoProcessing {
+  rpc SubmitFrame (SubmitFrameRequest) returns (SubmitFrameResponse) {}
+  rpc Subscribe (SubscribeRequest) returns (stream SubscribeResponse) {}
+}
+
+message SubmitFrameRequest {
+  bytes frame = 1;
+  string clientStartTime = 2;
+  string clientId = 3;
+}
+
+message SubmitFrameResponse {
+  string serverReceivedTime = 1;
+}
+
+message SubscribeRequest {
+  string clientId = 1;
+}
+
+message SubscribeResponse {
+  bytes frame = 1;
+  string clientStartTime = 2;
+  string serverReceivedTime = 3;
+  string serverProcessedTime = 4;
+}
