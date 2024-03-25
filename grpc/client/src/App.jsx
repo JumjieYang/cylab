@@ -77,6 +77,8 @@ export const App = () => {
           })}
         </div>
       </div>
+      <div className="h-1/4 w-full" />
+
     </div>
   )
 }
