@@ -12,29 +12,47 @@ export const App = () => {
         navigator.mediaDevices.getUserMedia({ video: true })
             .then(stream => {
                 videoRef.current.srcObject = stream;
-                setStreaming(true);
+                videoRef.current.onloadedmetadata = () => {
+                    setStreaming(true);
+                };
             })
             .catch(console.error);
 
         socket.on('frame_processed', data => {
             data['client-received'] = new Date().getTime().toString();
             setTimestamps((prev) => [...prev, data]);
+            drawBoundingBoxes(data['frame'], data['cls']);
         });
     }, []);
+
+    const drawBoundingBoxes = (boxes, classes) => {
+        const context = canvasRef.current.getContext('2d');
+        context.strokeStyle = 'red';
+        context.lineWidth = 2;
+        boxes.forEach(box => {
+            const [xmin, ymin, xmax, ymax] = box;
+            const width = xmax - xmin;
+            const height = ymax - ymin;
+            context.strokeRect(xmin, ymin, width, height);
+        });
+    };
 
     const captureFrame = () => {
         if (streaming) {
             const context = canvasRef.current.getContext('2d');
             context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height);
             canvasRef.current.toBlob(blob => {
-                blob.arrayBuffer().then(buffer => {
-                    const uint8View = new Uint8Array(buffer);
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = function () {
+                    const base64 = reader.result;
                     const data = {
                         'client-start': new Date().getTime().toString(),
-                        'frame': uint8View
+                        'frame': base64
                     }
                     socket.emit('frame', data);
-                });
+                }
+
             }, 'image/jpeg');
         }
     };
@@ -42,7 +60,7 @@ export const App = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             captureFrame();
-        }, 100);
+        }, 200);
         return () => clearInterval(interval);
     }, [streaming]);
 
