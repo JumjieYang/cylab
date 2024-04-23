@@ -39,4 +39,4 @@ def handle_video(data):
     emit('frame_processed', data)
 
 if __name__ == '__main__':
-    socketio.run(app, port=3004, debug=True)
+    socketio.run(app, port=3004, debug=True, allow_unsafe_werkzeug=True)

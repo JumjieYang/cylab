@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  backend:
+    build:
+      context: ./server
+    ports:
+      - "3004:3004"
+  frontend:
+    build:
+      context: ./client
+    ports:
+      - "1234:80"
